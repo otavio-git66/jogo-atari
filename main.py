@@ -241,10 +241,13 @@ def main():
             desenhar_texto("GAME OVER", 48, VERMELHO_NEON, LARGURA_TELA // 2, ALTURA_TELA // 3)
             
             # Pontuação final conquistada
-            desenhar_texto(f"PONTUACAO FINAL: {pontuacao}", 24, BRANCO, LARGURA_TELA // 2, ALTURA_TELA // 2)
+            desenhar_texto(f"PONTUACAO FINAL: {pontuacao:05d}", 24, BRANCO, LARGURA_TELA // 2, ALTURA_TELA // 2 - 20)
+            
+            # Pergunta se quer reiniciar
+            desenhar_texto("DESEJA JOGAR NOVAMENTE?", 20, ROXO_NEON, LARGURA_TELA // 2, ALTURA_TELA // 2 + 30)
             
             # Instrução de reinício
-            desenhar_texto("PRESSIONE 'R' PARA REINICIAR", 18, VERDE_RETRO, LARGURA_TELA // 2, ALTURA_TELA // 2 + 80)
+            desenhar_texto("PRESSIONE 'R' PARA REINICIAR OU 'ESC' PARA SAIR", 16, VERDE_RETRO, LARGURA_TELA // 2, ALTURA_TELA // 2 + 90)
             
         # Atualiza a tela
         pygame.display.flip()
