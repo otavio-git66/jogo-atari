@@ -205,12 +205,19 @@ def main():
             sprites_todas.update()
             
             # 3. Verificação de Colisões (Projetil x Asteroide)
-            # Ambos os sprites envolvidos na colisão serão removidos dos respectivos grupos (True, True)
-            colisoes = pygame.sprite.groupcollide(grupo_projeteis, grupo_asteroides, True, True)
-            if colisoes:
-                # Incrementa pontuação baseado em quantos asteroides foram destruídos
-                for _ in colisoes.values():
-                    pontuacao += PONTUACAO_POR_ASTEROIDE
+            # O projétil é destruído (True), mas o asteroide não é destruído imediatamente (False)
+            colisoes = pygame.sprite.groupcollide(grupo_projeteis, grupo_asteroides, True, False)
+            for projetil, asteroides_atingidos in colisoes.items():
+                for asteroide in asteroides_atingidos:
+                    destruido = asteroide.receber_dano()
+                    if destruido:
+                        # Se o asteroide foi destruído, soma a pontuação correspondente
+                        # Asteroides grandes (raio >= 26) dão o dobro de pontos
+                        if asteroide.raio >= 26:
+                            pontuacao += PONTUACAO_POR_ASTEROIDE * 2
+                        else:
+                            pontuacao += PONTUACAO_POR_ASTEROIDE
+                        asteroide.kill()
             
             # 4. Verificação de Colisão (Nave x Asteroide) -> Fim de Jogo
             colisoes_nave = pygame.sprite.spritecollide(nave, grupo_asteroides, False)

@@ -9,7 +9,7 @@ import random
 import math
 from config import (
     LARGURA_TELA, ALTURA_TELA, PRETO, VERDE_RETRO, ROXO_NEON, 
-    AMARELO_NEON, VELOCIDADE_JOGADOR, VELOCIDADE_PROJETIL,
+    AMARELO_NEON, VERMELHO_NEON, VELOCIDADE_JOGADOR, VELOCIDADE_PROJETIL,
     ASTEROIDE_MIN_VEL, ASTEROIDE_MAX_VEL, COOLDOWN_TIRO
 )
 
@@ -119,19 +119,29 @@ class Asteroide(pygame.sprite.Sprite):
     """
     Representa um asteroide inimigo.
     Cai em velocidade constante do topo da tela e tem formato poligonal irregular procedural.
+    Asteroides maiores possuem mais vida e exigem mais tiros para quebrar.
     """
     def __init__(self, multiplicador_velocidade=1.0):
         super().__init__()
-        # Define um raio aleatório para variar o tamanho do asteroide
-        self.raio = random.randint(18, 32)
+        # Define um raio aleatório maior para incluir asteroides pequenos e gigantes
+        self.raio = random.randint(14, 38)
         self.tamanho = self.raio * 2 + 6
         
+        # Determina a vida e espessura da linha baseada no tamanho do asteroide
+        # Asteroides com raio maior ou igual a 26 necessitam de 2 tiros (vida = 2) e têm borda grossa
+        if self.raio >= 26:
+            self.vida = 2
+            self.espessura = 3
+        else:
+            self.vida = 1
+            self.espessura = 1
+            
         # Cria a superfície transparente
         self.image = pygame.Surface((self.tamanho, self.tamanho), pygame.SRCALPHA)
         self.rect = self.image.get_rect()
         
         # Gera vértices procedurais para um visual clássico e único de asteroide vetorial
-        pontos = []
+        self.pontos = []
         num_lados = random.randint(8, 12)
         centro = self.tamanho // 2
         
@@ -142,10 +152,10 @@ class Asteroide(pygame.sprite.Sprite):
             raio_var = self.raio * random.uniform(0.7, 1.2)
             px = centro + int(raio_var * math.cos(angulo))
             py = centro + int(raio_var * math.sin(angulo))
-            pontos.append((px, py))
+            self.pontos.append((px, py))
             
-        # Desenha o contorno do asteroide com linhas neon amarelas
-        pygame.draw.polygon(self.image, AMARELO_NEON, pontos, 2)
+        # Desenha o contorno inicial do asteroide com linhas neon amarelas
+        pygame.draw.polygon(self.image, AMARELO_NEON, self.pontos, self.espessura)
         
         # Define velocidade de queda (com base no multiplicador de dificuldade) e posição inicial
         self.speed_y = random.uniform(ASTEROIDE_MIN_VEL, ASTEROIDE_MAX_VEL) * multiplicador_velocidade
@@ -153,6 +163,20 @@ class Asteroide(pygame.sprite.Sprite):
         # Spawn horizontal aleatório no topo da tela, fora da área visível inicialmente
         self.rect.centerx = random.randint(self.raio, LARGURA_TELA - self.raio)
         self.rect.bottom = 0
+
+    def receber_dano(self):
+        """
+        Reduz a vida do asteroide.
+        Se ainda estiver ativo, muda a sua cor para vermelho neon para dar feedback de dano.
+        Retorna True se o asteroide foi destruído, False caso contrário.
+        """
+        self.vida -= 1
+        if self.vida > 0:
+            # Limpa a superfície do sprite e redesenha com contorno vermelho neon
+            self.image.fill((0, 0, 0, 0))
+            pygame.draw.polygon(self.image, VERMELHO_NEON, self.pontos, self.espessura)
+            return False
+        return True
 
     def update(self):
         """
